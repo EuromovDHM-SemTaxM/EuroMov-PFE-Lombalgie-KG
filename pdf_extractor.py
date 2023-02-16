@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument(
-    "pdf_file_or_folder", nargs=1, dest="input_path",
+    "input_path", nargs=1,
     help="Specify input pdf file or input folder containing pdf files to extract")
 
 parser.add_argument(
@@ -20,7 +20,7 @@ parser.add_argument(
 
 def process_extraction(pdf_file: Path, target_directory: Path):
     pdf_path = pdf_file
-    basename = pdf_path.name
+    basename = pdf_path.stem
 
     final_target_directory = Path(target_directory, basename + "_extraction")
     final_target_directory.mkdir(exist_ok=True)
@@ -49,7 +49,8 @@ def process_extraction(pdf_file: Path, target_directory: Path):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    target_directory = args.target_directory
+    target_directory = Path(args.target_directory[0])
+    target_directory.mkdir(exist_ok=True)
 
     input_path = Path(args.input_path[0])
 
@@ -59,5 +60,5 @@ if __name__ == "__main__":
     else:
         pdf_files.extend(list(input_path.glob("*.pdf")))
 
-    for pdf_file in tqdm(pdf_files):
+    for pdf_file in tqdm(pdf_files, desc="Processing pdf files"):
         process_extraction(pdf_file, target_directory)
