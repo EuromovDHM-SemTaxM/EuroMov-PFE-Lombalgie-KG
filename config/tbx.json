@@ -1,0 +1,8 @@
+{
+  "es_stopwords": "./resources/stop-esp.txt",
+  "en_stopwords": "./resources/stop-eng.txt",
+  "es_innerstop": "./resources/inner-stop-esp.txt",
+  "en_innerstop": "./resources/inner-stop-eng.txt",
+  "es_numlist": "./resources/numberlist_es",
+  "exclusion_regexps": "./resources/exclusion-regexps.txt"
+}

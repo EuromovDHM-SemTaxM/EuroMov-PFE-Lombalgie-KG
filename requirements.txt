@@ -3,3 +3,4 @@ PyPDF2<3.0
 camelot-py
 pymupdf
 ghostscript
+datasets
