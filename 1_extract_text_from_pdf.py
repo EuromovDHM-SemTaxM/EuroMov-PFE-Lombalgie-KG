@@ -5,29 +5,33 @@ from tqdm import tqdm
 
 from hasextract.pdf import extract_pdf
 
-parser = argparse.ArgumentParser(
-    description="PDF Extraction Tool"
+parser = argparse.ArgumentParser(description="PDF Extraction Tool")
+
+parser.add_argument(
+    "input_path",
+    nargs=1,
+    help="Specify input pdf file or input folder containing pdf files to extract",
 )
 
 parser.add_argument(
-    "input_path", nargs=1,
-    help="Specify input pdf file or input folder containing pdf files to extract")
-
-parser.add_argument(
-    "--target", nargs=1, default=['extracted_data'], dest="target_directory",
-    help="Target directory where the outputs of the extraction will be stored. Default: ./extracted_data")
+    "--target",
+    nargs=1,
+    default=["extracted_data"],
+    dest="target_directory",
+    help="Target directory where the outputs of the extraction will be stored. Default: ./extracted_data",
+)
 
 
 def process_extraction(pdf_file: Path, target_directory: Path):
     pdf_path = pdf_file
     basename = pdf_path.stem
 
-    final_target_directory = Path(target_directory, basename + "_extraction")
+    final_target_directory = Path(target_directory, f"{basename}_extraction")
     final_target_directory.mkdir(exist_ok=True)
 
     full_text, images, tables = extract_pdf(pdf_file)
 
-    images_path = Path(final_target_directory, 'images')
+    images_path = Path(final_target_directory, "images")
     images_path.mkdir(exist_ok=True)
     for image, image_text, id in images:
         image_save_path = Path(images_path, f"{id}.png")
@@ -37,14 +41,16 @@ def process_extraction(pdf_file: Path, target_directory: Path):
         with open(image_text_path, "w") as f:
             f.write(image_text)
 
-    with open(Path(final_target_directory, 'full_text.txt'), 'w', encoding="utf-8") as f:
+    with open(
+        Path(final_target_directory, "full_text.txt"), "w", encoding="utf-8"
+    ) as f:
         f.write(full_text)
 
-    tables_path = Path(final_target_directory, 'tables')
+    tables_path = Path(final_target_directory, "tables")
     tables_path.mkdir(exist_ok=True)
 
     for df_index in range(len(tables)):
-        tables[df_index].to_csv(Path(tables_path, f'table_{df_index}.csv'), index=False)
+        tables[df_index].to_csv(Path(tables_path, f"table_{df_index}.csv"), index=False)
 
 
 if __name__ == "__main__":

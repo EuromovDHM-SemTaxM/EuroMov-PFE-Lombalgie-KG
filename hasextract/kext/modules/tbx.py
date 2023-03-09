@@ -29,10 +29,10 @@ class TBXExtractor(KnowledgeExtractor):
     def __call__(self, corpus: str, parameters: Dict[str, str] = None):
         lang_in = parameters['source_language']
 
-        if lang_in == "es":
-            lang = lang_in + "p"
-        elif lang_in == "en":
-            lang = lang_in + "g"
+        if lang_in == "en":
+            lang = f"{lang_in}g"
+        elif lang_in == "es":
+            lang = f"{lang_in}p"
         # print(lang)
         extractor = TBXTools()
 
@@ -43,13 +43,13 @@ class TBXExtractor(KnowledgeExtractor):
         extractor.create_project(":memory:", lang, overwrite=True)
         extractor.load_sl_corpus_s(corpus)
         extractor.ngram_calculation(nmin=1, nmax=3, minfreq=3)
-        if lang == "esp":
-            extractor.load_sl_stopwords(TBXConfig().es_stopwords)
-            extractor.load_sl_inner_stopwords(TBXConfig().es_innerstop)
-        elif lang == "eng":
+        if lang == "eng":
             extractor.load_sl_stopwords(TBXConfig().en_stopwords)
             extractor.load_sl_inner_stopwords(TBXConfig().en_innerstop)
 
+        elif lang == "esp":
+            extractor.load_sl_stopwords(TBXConfig().es_stopwords)
+            extractor.load_sl_inner_stopwords(TBXConfig().es_innerstop)
         extractor.statistical_term_extraction(minfreq=4)
         # aquí junta los términos que son iguales pero están en mayus y en minus
         extractor.case_normalization(verbose=True)

@@ -8,13 +8,13 @@ from pycond import parse_cond
 from pydantic import BaseModel, root_validator
 
 
-
 logger = logging.getLogger()
 
 
 class MentionType(Enum):
     LINKED_ENTITY = 0
-    EXTRACTED_TERM = 0
+    EXTRACTED_TERM = 1
+
 
 class ConceptMention(BaseModel):
     id: str
@@ -26,7 +26,7 @@ class ConceptMention(BaseModel):
     confidence_score: Optional[float]
 
     def __hash__(self):
-         return hash((type(self),) + tuple(self.id))
+        return hash((type(self),) + tuple(self.id))
 
 
 class RelationInstance(BaseModel):
@@ -49,35 +49,33 @@ class ExtractedKnowledge(BaseModel):
         concepts = values.get("concepts")
         language = values.get("language")
         source_text = values.get("source_text")
+        logger.info("Validating extracted knowledge...")
         if not concepts[0].instances:
+            logger.debug("No mentions present, re-annotating text...")
             from pyclinrec import __path__ as pyclinrec_path
             from pyclinrec.dictionary import StringDictionaryLoader
             from pyclinrec.recognizer import IntersStemConceptRecognizer
-            dictionary = [(concept.id, concept.matched_text)
-                          for concept in concepts]
+
+            dictionary = [(concept.id, concept.matched_text) for concept in concepts]
             loader = StringDictionaryLoader(dictionary)
 
             concept_recognizer = IntersStemConceptRecognizer(
                 loader,
                 os.path.join(pyclinrec_path[0], f"stopwords{language}.txt"),
-                os.path.join(pyclinrec_path[0],
-                             f"termination_terms{language}.txt"))
-            
+                os.path.join(pyclinrec_path[0], f"termination_terms{language}.txt"),
+            )
+
             concept_recognizer.initialize()
-            logger.info("Reidentifying extracted term spans...")
+            logger.info("Re-identifying extracted term spans...")
             _, _, annotations = concept_recognizer.annotate(source_text)
 
-            mention_index = dict()
-            for concept in concepts:
-                mention_index[concept.id] = set()
-
-
+            mention_index = {concept.id: set() for concept in concepts}
             for a in annotations:
                 mention_index[a.concept_id].add((a.start, a.end))
-            
+
             for concept in concepts:
                 concept.instances = mention_index[concept.id]
-
+        logger.info("Validation complete.")
         return values
 
 
@@ -102,9 +100,8 @@ class CompositeKnowledgeExtractor(KnowledgeExtractor):
     def __call__(self, corpus, parameters: Dict[str, str] = None) -> ExtractedKnowledge:
         result = {}
         for extractor in self.registry:
-            logger.debug(
-                f"Checking {extractor._condition_string} against {parameters}")
+            logger.debug(f"Checking {extractor._condition_string} against {parameters}")
             if extractor._condition(state=parameters):
-                logger.debug("Triggering processor" + str(extractor))
+                logger.debug(f"Triggering processor{str(extractor)}")
                 result[extractor.__class__.__name__] = extractor(corpus, parameters)
         return result
