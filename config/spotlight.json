@@ -1,0 +1,5 @@
+{
+  "endpoint": "https://api.dbpedia-spotlight.org/fr/annotate",
+  "dbpedia_prefix_uri": "http://fr.dbpedia.org/resource/",
+  "dbpedia_sparql_endpoint": "https://fr.dbpedia.org/sparql"
+}

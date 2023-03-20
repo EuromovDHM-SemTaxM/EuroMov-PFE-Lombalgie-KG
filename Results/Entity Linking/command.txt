@@ -1,7 +1,0 @@
-java -Xmx10G -jar rest-1.1-jar-with-dependencies.jar C:\Users\Anas\Desktop\M2SI\S4\dbpedia-spotlight-model-master\fr http://localhost:2222/rest
-
-cmd /c curl http://localhost:2222/rest/annotate --data-urlencode "text=Barack Obama was the president of the United States" -H "Accept: text/turtle"
-
-For JSON output: "Accept: application/json"
-
-cmd /c curl http://localhost:2222/rest/annotate --data-urlencode "text=$(cat $pwd\alltext.txt)" -H "Accept: text/turtle" > dbpediaAnnotation.ttl

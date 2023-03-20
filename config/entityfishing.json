@@ -1,0 +1,5 @@
+{
+  "endpoint": "http://nerd.huma-num.fr/nerd/service",
+  "wikidata_prefix_uri": "http://www.wikidata.org/entity/",
+  "wikidata_sparql_endpoint": "https://query.wikidata.org/"
+}

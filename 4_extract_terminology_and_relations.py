@@ -4,16 +4,21 @@ import logging
 from pathlib import Path
 
 from tqdm import tqdm
-from hasextract.kext.evaluator import (
+from hasextract.evaluation.evaluator import (
     CompositeKnowledgeEvaluator,
     DescriptiveStatisticsEvaluator,
     OverlapEvaluator,
 )
 
 from hasextract.kext.knowledgeextractor import CompositeKnowledgeExtractor
+from hasextract.rdf_mapper.merger import FlatMerger
+from hasextract.kext.modules.entityfishing import EntityFishingKnowledgeExtractor
+from hasextract.kext.modules.ncboannotator import NCBOAnnotatorKnowledgeExtractor
+from hasextract.kext.modules.spotlight import SpotlightKnowledgeExtractor
 from hasextract.kext.modules.tbx import TBXExtractor
 from hasextract.kext.modules.termsuite import TermsuiteKnowledgeExtractor
 from hasextract.kext.modules.text2tcs import Text2TCSExtractor
+from hasextract.kext.modules.usea import USEAKnowledgeExtractor
 from hasextract.logging import setup_logging
 
 setup_logging(
@@ -69,6 +74,10 @@ if __name__ == "__main__":
             TermsuiteKnowledgeExtractor('method contains "termsuite"'),
             TBXExtractor('method contains "tbxtools"'),
             Text2TCSExtractor("method contains text2tcs"),
+            EntityFishingKnowledgeExtractor('method contains "entityfishing"'),
+            SpotlightKnowledgeExtractor('method contains "spotlight"'),
+            NCBOAnnotatorKnowledgeExtractor('method contains "ncboannotator"'),
+            USEAKnowledgeExtractor('method contains "usea"')
         ]
     )
 
@@ -90,6 +99,8 @@ if __name__ == "__main__":
         input_files.extend(
             list(file.glob(f"*{args.corpus_file[0]}")) for file in input_path.glob("*")
         )
+    result_name = "kext_result"
+    eval_name = "eval.json"
     for input_file in tqdm(input_files, desc="Processing files"):
 
         input_text = ""
@@ -102,3 +113,15 @@ if __name__ == "__main__":
         logger.info("Running evaluation pipeline...")
         evaluation = composite_evaluator(extraction)
         logger.info(json.dumps(evaluation, indent=2))
+        
+        with open(Path(file.parent, eval_name), "w") as f:
+            json.dump(evaluation, f, indent=2)
+
+        for extractor in extraction:
+            with open(Path(file.parent, f"{result_name}_{extractor}.json"), "w") as f:
+                f.write(extraction[extractor].json(exclude_none=True).encode().decode('unicode-escape'))
+                
+        merger = FlatMerger()
+        merged_extracted = merger(extraction)
+        
+        pass

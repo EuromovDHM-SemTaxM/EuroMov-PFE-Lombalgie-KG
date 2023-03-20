@@ -1,3 +1,4 @@
+import hashlib
 import json
 from typing import Dict
 
@@ -6,10 +7,10 @@ from confz import ConfZ, ConfZFileSource
 from pydantic import AnyUrl
 
 from hasextract.kext.knowledgeextractor import (
-    ConceptMention,
+    Concept,
     ExtractedKnowledge,
     KnowledgeExtractor,
-    MentionType,
+    ConceptType,
     RelationInstance,
 )
 from hasextract.util import post
@@ -25,6 +26,11 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
         super().__init__(trigger_condition)
 
     def __call__(self, corpus: str, parameters: Dict[str, str] = None):
+        m = hashlib.sha256()
+        m.update(corpus.encode("utf-8"))
+        # Creating a unique key for the cache.
+        key = f"termsuite_{m.hexdigest()}"
+        
         if not (
             response := post(
                 f"{TermSuiteConfig().endpoint}?language={parameters['source_language']}",
@@ -33,6 +39,7 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
                     "Accept": "application/json",
                     "Content-Type": "plain/text",
                 },
+                key=key
             )
         ):
             return []
@@ -43,10 +50,10 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
             idx = f"termsuite_{str(term_id)}"
             props = term["props"]
             term = props["pilot"]
-            concept = ConceptMention(
-                id=idx,
-                matched_text=term,
-                mention_type=MentionType.EXTRACTED_TERM,
+            concept = Concept(
+                idx=idx,
+                label=term,
+                concept_type=ConceptType.EXTRACTED_TERM,
                 rank=props["rank"],
                 rule=props["rule"],
             )
@@ -66,5 +73,5 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
             language=parameters["source_language"],
             source_text=corpus,
             concepts=concepts,
-            relations=relations,
+            relations=relations
         )

@@ -8,43 +8,20 @@ from confz import ConfZ, ConfZFileSource
 from elg import Service
 from tqdm import tqdm
 
+from hasextract.util import _chunk_sentences
+
 logger = getLogger()
 
 from hasextract.kext.knowledgeextractor import (
-    ConceptMention,
+    Concept,
     ExtractedKnowledge,
     KnowledgeExtractor,
-    MentionType,
+    ConceptType,
     RelationInstance,
 )
 
 
-def _chunk_sentences(sentences, max_chars):
-    sentences_with_fractional_splits = []
-    logger.debug("Fractional splits...")
-    for sent in sentences:
-        sent_len = len(sent)
-        if sent_len > max_chars:
-            prev_i = 0
-            for i in range(0, sent_len, max_chars - 1):
-                sentences_with_fractional_splits.append(sent[prev_i:i])
-        else:
-            sentences_with_fractional_splits.append(sent)
-    sentences = sentences_with_fractional_splits
-    chunks = []
-    prev_cutoff = 0
-    i = 0
-    logger.debug("Chunk consolidation...")
-    while i < len(sentences):
-        cumulative_string = " ".join(sentences[prev_cutoff:i])
-        if len(cumulative_string) > max_chars:
-            while len(cumulative_string) > max_chars:
-                i -= 1
-                cumulative_string = " ".join(sentences[prev_cutoff:i])
-            chunks.append(" ".join(sentences[prev_cutoff : i - 1]))
-            prev_cutoff = i - 1
-        i += 1
-    return chunks
+
 
 
 class Text2TCSConfig(ConfZ):
@@ -75,8 +52,10 @@ class Text2TCSExtractor(KnowledgeExtractor):
 
         logger.debug("Chunking sentences to fit API limits... ")
         sentences = sent_tokenize(corpus)
-
-        chunks = _chunk_sentences(sentences, max_chars)
+        if len(corpus) > max_chars:
+            chunks = _chunk_sentences(sentences, max_chars)
+        else:
+            chunks = [corpus]
 
         concepts = []
         concept_index = {}
@@ -98,16 +77,16 @@ class Text2TCSExtractor(KnowledgeExtractor):
                 for concept in response.annotations:
                     for annotation in response.annotations[concept]:
                         idx = "text2tcs_" + annotation.features["id"]
-                        mention = ConceptMention(
-                            id=idx,
-                            matched_text=annotation.features["term"],
-                            mention_type=MentionType.EXTRACTED_TERM,
+                        mention = Concept(
+                            idx=idx,
+                            label=annotation.features["term"],
+                            concept_type=ConceptType.EXTRACTED_TERM,
                         )
                         concepts.append(mention)
-                        concept_index[id] = mention
+                        concept_index[idx] = mention
                         if len(annotation.features["relations"]) > 0:
                             for relation in annotation.features["relations"]:
-                                relation["source"] = id
+                                relation["source"] = idx
                                 relation["related concept"] = (
                                     "text2tcs_" + relation["related concept"]
                                 )

@@ -5,76 +5,97 @@ import os
 from typing import Dict, List, Optional
 
 from pycond import parse_cond
-from pydantic import BaseModel, root_validator
+from pydantic import AnyUrl, BaseModel, root_validator
+from tqdm import tqdm
 
 
 logger = logging.getLogger()
 
 
-class MentionType(Enum):
+class ConceptType(Enum):
     LINKED_ENTITY = 0
     EXTRACTED_TERM = 1
+    LEXICAL_CONCEPT = 2
 
 
-class ConceptMention(BaseModel):
-    id: str
-    matched_text: str
-    mention_type: MentionType
-    instances: Optional[list[tuple[int, int]]]
+class Mention(BaseModel):
+    start: int
+    end: int
+    text: str
+    score: Optional[float]
+    modifiers: Optional[list[str]]
+    
+    def __hash__(self):
+        return hash((type(self),) + (self.start, self.end, self.text))
+
+class Concept(BaseModel):
+    idx: str
+    label: str
+    concept_type: ConceptType
+    instances: Optional[list[Mention]]
     rank: Optional[int]
     rule: Optional[str]
     confidence_score: Optional[float]
+    mappings : Optional[list[tuple[str, str]]]
+    provenance: Optional[dict[str, str]]
 
     def __hash__(self):
-        return hash((type(self),) + tuple(self.id))
+        return hash((type(self),) + tuple(self.idx))
+    
+    # class Config:
+    #     arbitrary_types_allowed=True
+    
 
 
 class RelationInstance(BaseModel):
-    source: ConceptMention
-    target: ConceptMention
+    source: Concept
+    target: Concept
     name: str
+    provenance: Optional[dict[str, str]]
 
+class FrameArgument(BaseModel):
+    start: int
+    end: int 
+    role: str
+
+class Frame(BaseModel):
+    frame_name: str
+    start:int
+    end: int
+    arguments: list[FrameArgument]
+    provenance: Optional[dict[str, str]]
+
+class AMRGraph(BaseModel):
+    start:int
+    end: int
+    graph: str
+    provenance: Optional[dict[str, str]]
 
 class ExtractedKnowledge(BaseModel):
     name: str
     agent: str
     source_text: str
     language: str
-    concepts: List[ConceptMention]
-    relations: List[RelationInstance]
+    concepts: list[Concept]
+    relations: list[RelationInstance]
+    semantic_roles: Optional[list[Frame]]
+    amr_parses: Optional[list[AMRGraph]]
 
     @root_validator()
     @classmethod
     def validate_concept_offsets(cls, values):
         concepts = values.get("concepts")
-        language = values.get("language")
         source_text = values.get("source_text")
         logger.info("Validating extracted knowledge...")
         if not concepts[0].instances:
             logger.debug("No mentions present, re-annotating text...")
-            from pyclinrec import __path__ as pyclinrec_path
-            from pyclinrec.dictionary import StringDictionaryLoader
-            from pyclinrec.recognizer import IntersStemConceptRecognizer
+            import re
 
-            dictionary = [(concept.id, concept.matched_text) for concept in concepts]
-            loader = StringDictionaryLoader(dictionary)
-
-            concept_recognizer = IntersStemConceptRecognizer(
-                loader,
-                os.path.join(pyclinrec_path[0], f"stopwords{language}.txt"),
-                os.path.join(pyclinrec_path[0], f"termination_terms{language}.txt"),
-            )
-
-            concept_recognizer.initialize()
-            logger.info("Re-identifying extracted term spans...")
-            _, _, annotations = concept_recognizer.annotate(source_text)
-
-            mention_index = {concept.id: set() for concept in concepts}
-            for a in annotations:
-                mention_index[a.concept_id].add((a.start, a.end))
-
-            for concept in concepts:
-                concept.instances = mention_index[concept.id]
+            for concept in tqdm(concepts, desc="Locating occurrences..."):
+                concept.instances = set()
+                for match in re.finditer(re.escape(concept.label), source_text):
+                    concept.instances.add(Mention(start=match.start(), end=match.end(), text=source_text[match.start():match.end()]))
+                concept.instances = list(concept.instances)
         logger.info("Validation complete.")
         return values
 

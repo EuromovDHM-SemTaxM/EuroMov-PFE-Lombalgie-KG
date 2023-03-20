@@ -48,40 +48,45 @@ def setup_logging(console_log_output, console_log_level, console_log_color, logf
     elif (console_log_output == "stderr"):
         console_log_output = sys.stderr
     else:
-        print("Failed to set console output: invalid output: '%s'" % console_log_output)
+        print(f"Failed to set console output: invalid output: '{console_log_output}'")
         return False
     console_handler = logging.StreamHandler(console_log_output)
 
     # Set console log level
     try:
         console_handler.setLevel(console_log_level.upper()) # only accepts uppercase level names
-    except:
-        print("Failed to set console log level: invalid level: '%s'" % console_log_level)
+    except Exception:
+        print(f"Failed to set console log level: invalid level: '{console_log_level}'")
         return False
 
-    # Create and set formatter, add console handler to logger
-    console_formatter = LogFormatter(fmt=log_line_template, color=console_log_color)
-    console_handler.setFormatter(console_formatter)
-    logger.addHandler(console_handler)
-
+    _add_formatter(
+        log_line_template, console_log_color, console_handler, logger
+    )
     # Create log file handler
     try:
         logfile_handler = logging.FileHandler(logfile_file)
     except Exception as exception:
-        print("Failed to set up log file: %s" % str(exception))
+        print(f"Failed to set up log file: {str(exception)}")
         return False
 
     # Set log file log level
     try:
         logfile_handler.setLevel(logfile_log_level.upper()) # only accepts uppercase level names
-    except:
-        print("Failed to set log file log level: invalid level: '%s'" % logfile_log_level)
+    except Exception:
+        print(
+            f"Failed to set log file log level: invalid level: '{logfile_log_level}'"
+        )
         return False
 
-    # Create and set formatter, add log file handler to logger
-    logfile_formatter = LogFormatter(fmt=log_line_template, color=logfile_log_color)
-    logfile_handler.setFormatter(logfile_formatter)
-    logger.addHandler(logfile_handler)
-
+    _add_formatter(
+        log_line_template, logfile_log_color, logfile_handler, logger
+    )
     # Success
     return True
+
+
+def _add_formatter(log_line_template, color, arg2, logger):
+    # Create and set formatter, add console handler to logger
+    console_formatter = LogFormatter(fmt=log_line_template, color=color)
+    arg2.setFormatter(console_formatter)
+    logger.addHandler(arg2)
