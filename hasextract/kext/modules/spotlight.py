@@ -8,17 +8,19 @@ import SPARQLWrapper
 import requests
 from confz import ConfZ, ConfZFileSource
 from pydantic import AnyUrl
-from tqdm import tqdm 
+from tqdm import tqdm
 
 from hasextract.kext.knowledgeextractor import (
     Concept,
     ExtractedKnowledge,
+    KBConcept,
     KnowledgeExtractor,
     ConceptType,
     Mention,
     RelationInstance,
 )
-from hasextract.util import _break_up_sentences, get, post
+from hasextract.util.cached_requests import get
+from hasextract.util.segmentation import _break_up_sentences
 
 
 logger = logging.getLogger()
@@ -40,20 +42,72 @@ def query_relations(uri):
         params = {
             "query": f"select distinct ?rel ?target where {{<{uri}> ?rel ?target.}}",
             "format": "application/sparql-results+json",
-            "timeout":0,
-            "signal_void":"on"
+            "timeout": 0,
+            "signal_void": "on",
         }
-        if result := get(f"{endpoint}?{urlencode(params)}",headers= {}):
+        if result := get(f"{endpoint}?{urlencode(params)}", headers={}):
             ret = json.loads(result)
             relations.extend(
                 (r["rel"]["value"], r["target"]["value"])
                 for r in ret["results"]["bindings"]
             )
-            
+
     except json.decoder.JSONDecodeError:
         return None
 
     return relations
+
+
+def _perform_request(chunk):
+    m = hashlib.sha256()
+    m.update(chunk.encode("utf-8"))
+    # Creating a unique key for the cache.
+    key = f"ef_{m.hexdigest()}"
+    request_params = {
+        "text": chunk,
+    }
+    return (
+        json.loads(response)
+        if (
+            response := get(
+                f"{SpotlightConfig().endpoint}?{urlencode(request_params)}",
+                headers={"Accept": "application/json"},
+                key=key,
+            )
+        )
+        else None
+    )
+
+
+def _extract_concepts_and_relations(
+    response, concept_index, relation_index, start_offset
+):
+    for entity in response["Resources"]:
+        idx = f"{entity['@URI']}"
+        if idx not in concept_index:
+            concept = KBConcept(
+                idx=idx,
+                label=idx.split("/")[-1],
+            )
+            concept_index[idx] = concept
+
+        if not concept_index[idx].instances:
+            concept_index[idx].instances = []
+        offset = int(entity["@offset"])
+        concept_index[idx].instances.append(
+            (
+                Mention(
+                    start=start_offset + offset,
+                    end=start_offset + offset + len(entity["@surfaceForm"]),
+                    text=entity["@surfaceForm"],
+                )
+            )
+        )
+
+        if idx not in relation_index:
+            relation_index[idx] = query_relations(idx)
+
+    return concept_index, relation_index
 
 
 class SpotlightKnowledgeExtractor(KnowledgeExtractor):
@@ -88,52 +142,13 @@ class SpotlightKnowledgeExtractor(KnowledgeExtractor):
                 .replace("’", "'")
             )
             if len(chunk.strip()) > 0:
-                chunk_doc = nlp(chunk)
-                m = hashlib.sha256()
-                m.update(chunk.encode("utf-8"))
-                # Creating a unique key for the cache.
-                key = f"ef_{m.hexdigest()}"
-                request_params = {
-                    "text": chunk,
-                }
-                if not (
-                    response := get(
-                        f"{SpotlightConfig().endpoint}?{urlencode(request_params)}",
-                        headers={
-                            "Accept": "application/json"
-                        },
-                        key=key,
-                    )
-                ):
+                response = _perform_request(chunk)
+                if not response:
                     return []
-
-                response = json.loads(response)
-                if 'Resources' in response:
-                    for entity in response["Resources"]:
-                        idx = f"{entity['@URI']}"
-                        if idx not in concept_index:
-                            concept = Concept(
-                                idx=idx,
-                                label=idx.split("/")[-1],
-                                concept_type=ConceptType.LINKED_ENTITY,
-                            )
-                            concept_index[idx] = concept
-
-                        if not concept_index[idx].instances:
-                            concept_index[idx].instances = []
-                        offset = int(entity['@offset'])
-                        concept_index[idx].instances.append(
-                            (
-                                Mention(
-                                    start=chunk_span[0] + offset,
-                                    end=chunk_span[0] + offset + len(entity['@surfaceForm']),
-                                    text=entity['@surfaceForm'],
-                                )
-                            )
-                        )
-
-                        if idx not in relation_index:
-                            relation_index[idx] = query_relations(idx)
+                if "Resources" in response:
+                    concept_index, relation_index = _extract_concepts_and_relations(
+                        response, concept_index, relation_index, chunk_span[0]
+                    )
 
         concepts = list(concept_index.values())
 

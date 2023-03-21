@@ -11,11 +11,13 @@ from pydantic import AnyUrl
 from hasextract.kext.knowledgeextractor import (
     Concept,
     ExtractedKnowledge,
+    KBConcept,
     KnowledgeExtractor,
     ConceptType,
     Mention,
 )
-from hasextract.util import _chunk_sentences, _chunk_sentences_by_span, get
+from hasextract.util.cached_requests import get
+from hasextract.util.segmentation import _chunk_sentences_by_span
 
 logger = logging.getLogger()
 
@@ -68,7 +70,7 @@ class NCBOAnnotatorKnowledgeExtractor(KnowledgeExtractor):
                 for entity in response:
                     annotated_class = entity["annotatedClass"]
                     idx = f"{annotated_class['@id']}"
-                    concept = Concept(
+                    concept = KBConcept(
                         idx=idx,
                         label="",
                         concept_type=ConceptType.LINKED_ENTITY,

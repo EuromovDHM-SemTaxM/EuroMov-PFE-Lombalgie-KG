@@ -15,7 +15,7 @@ logger = logging.getLogger()
 class ConceptType(Enum):
     LINKED_ENTITY = 0
     EXTRACTED_TERM = 1
-    LEXICAL_CONCEPT = 2
+    LEXICAL_SENSE = 2
 
 
 class Mention(BaseModel):
@@ -28,14 +28,10 @@ class Mention(BaseModel):
     def __hash__(self):
         return hash((type(self),) + (self.start, self.end, self.text))
 
-class Concept(BaseModel):
+class Concept(BaseModel, ABC):
     idx: str
     label: str
-    concept_type: ConceptType
     instances: Optional[list[Mention]]
-    rank: Optional[int]
-    rule: Optional[str]
-    confidence_score: Optional[float]
     mappings : Optional[list[tuple[str, str]]]
     provenance: Optional[dict[str, str]]
 
@@ -45,8 +41,22 @@ class Concept(BaseModel):
     # class Config:
     #     arbitrary_types_allowed=True
     
+class TermConcept(Concept):
+    rank: Optional[int]
+    rule: Optional[str]
+    confidence_score: Optional[float]
+    
+    def __init__(self, *args, **kwargs):
+        super(TermConcept, self).__init__(*args, **kwargs)
 
+class LexicalConcept(Concept):
+    def __init__(self, *args, **kwargs):
+        super(LexicalConcept, self).__init__(*args, **kwargs)
 
+class KBConcept(Concept):
+    def __init__(self, *args, **kwargs):
+        super(KBConcept, self).__init__(*args, **kwargs)
+    
 class RelationInstance(BaseModel):
     source: Concept
     target: Concept

@@ -19,7 +19,7 @@ from hasextract.kext.modules.tbx import TBXExtractor
 from hasextract.kext.modules.termsuite import TermsuiteKnowledgeExtractor
 from hasextract.kext.modules.text2tcs import Text2TCSExtractor
 from hasextract.kext.modules.usea import USEAKnowledgeExtractor
-from hasextract.logging import setup_logging
+from hasextract.util.logging import setup_logging
 
 setup_logging(
     console_log_output="stdout",

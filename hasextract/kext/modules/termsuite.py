@@ -12,8 +12,9 @@ from hasextract.kext.knowledgeextractor import (
     KnowledgeExtractor,
     ConceptType,
     RelationInstance,
+    TermConcept,
 )
-from hasextract.util import post
+from hasextract.util.cached_requests import post
 
 
 class TermSuiteConfig(ConfZ):
@@ -50,7 +51,7 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
             idx = f"termsuite_{str(term_id)}"
             props = term["props"]
             term = props["pilot"]
-            concept = Concept(
+            concept = TermConcept(
                 idx=idx,
                 label=term,
                 concept_type=ConceptType.EXTRACTED_TERM,

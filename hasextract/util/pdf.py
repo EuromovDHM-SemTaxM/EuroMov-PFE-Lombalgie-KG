@@ -31,10 +31,10 @@ def _extract_and_ocr_images(fitz_document, page_index):
 
 def _extract_tables(pdf_file):
     extracted_tables = camelot.read_pdf(str(pdf_file), pages='all')
-    dfs = []
-    for i in trange(extracted_tables.n, desc="Extracting tables"):
-        dfs.append(extracted_tables[i].df)
-    return dfs
+    return [
+        extracted_tables[i].df
+        for i in trange(extracted_tables.n, desc="Extracting tables")
+    ]
 
 
 def extract_pdf(pdf_file: Path) -> tuple[str, list[fitz.Pixmap], list[pandas.DataFrame]]:

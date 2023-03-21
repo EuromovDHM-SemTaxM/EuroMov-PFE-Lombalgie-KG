@@ -3,7 +3,7 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from hasextract.pdf import extract_pdf
+from hasextract.util.pdf import extract_pdf
 
 parser = argparse.ArgumentParser(description="PDF Extraction Tool")
 

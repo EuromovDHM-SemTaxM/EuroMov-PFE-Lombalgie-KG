@@ -8,7 +8,9 @@ from confz import ConfZ, ConfZFileSource
 from elg import Service
 from tqdm import tqdm
 
-from hasextract.util import _chunk_sentences
+from hasextract.util.segmentation import _chunk_sentences
+
+
 
 logger = getLogger()
 
@@ -18,6 +20,7 @@ from hasextract.kext.knowledgeextractor import (
     KnowledgeExtractor,
     ConceptType,
     RelationInstance,
+    TermConcept,
 )
 
 
@@ -77,10 +80,9 @@ class Text2TCSExtractor(KnowledgeExtractor):
                 for concept in response.annotations:
                     for annotation in response.annotations[concept]:
                         idx = "text2tcs_" + annotation.features["id"]
-                        mention = Concept(
+                        mention = TermConcept(
                             idx=idx,
-                            label=annotation.features["term"],
-                            concept_type=ConceptType.EXTRACTED_TERM,
+                            label=annotation.features["term"]
                         )
                         concepts.append(mention)
                         concept_index[idx] = mention

@@ -17,15 +17,13 @@ from hasextract.kext.knowledgeextractor import (
     FrameArgument,
     KnowledgeExtractor,
     ConceptType,
+    LexicalConcept,
     Mention,
 )
-from hasextract.util import (
-    _break_up_sentences,
-    _chunk_sentences,
-    _chunk_sentences_by_span,
-    get,
+from hasextract.util.cached_requests import (
     post,
 )
+from hasextract.util.segmentation import _break_up_sentences
 
 logger = logging.getLogger()
 
@@ -45,10 +43,10 @@ def _extract_lexical_concepts(response, token_spans, chunk_span, concept_index):
         synset = sense["features"]["synset"]
         idx = f"http://babelnet.org/rdf/page/{synset.replace('bn:', 's')}"
         if idx not in concept_index:
-            concept = Concept(
+            concept = LexicalConcept(
                 idx=idx,
                 label=synset,
-                concept_type=ConceptType.LEXICAL_CONCEPT,
+                concept_type=ConceptType.LEXICAL_SENSE,
                 instances=[],
             )
             concept_index[idx] = concept

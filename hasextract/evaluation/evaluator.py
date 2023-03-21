@@ -60,7 +60,7 @@ class DescriptiveStatisticsEvaluator(ExtractedKnowledgeEvaluator):
                     else 0
                 )
 
-                if c.confidence_score:
+                if 'confidence_score' in c.__dict__:
                     avg_confidence += avg_confidence
 
             avg_len /= len(concepts) * 1.0

@@ -2,19 +2,20 @@ import hashlib
 import json
 from typing import Dict
 
-import requests
+
 from confz import ConfZ, ConfZFileSource
 from pydantic import AnyUrl
 
 from hasextract.kext.knowledgeextractor import (
     Concept,
     ExtractedKnowledge,
+    KBConcept,
     KnowledgeExtractor,
     ConceptType,
     Mention,
     RelationInstance,
 )
-from hasextract.util import get, post
+from hasextract.util.cached_requests import get, post
 
 
 class EntityFishingConfig(ConfZ):
@@ -90,18 +91,23 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
         for entity in response["entities"]:
             idx = f"{EntityFishingConfig().wikidata_prefix_uri}{entity['wikidataId']}"
             if idx not in concept_index:
-                concept = Concept(
+                concept = KBConcept(
                     idx=idx,
-                    label=entity["rawName"],
-                    concept_type=ConceptType.LINKED_ENTITY,
-                    confidence_score=entity["nerd_selection_score"],
+                    label=entity["rawName"]
                 )
                 concept_index[idx] = concept
 
             if not concept_index[idx].instances:
                 concept_index[idx].instances = []
             concept_index[idx].instances.append(
-                (Mention(start=entity["offsetStart"], end=entity["offsetEnd"], text = corpus[entity["offsetStart"]:entity["offsetEnd"]]))
+                (
+                    Mention(
+                        start=entity["offsetStart"],
+                        end=entity["offsetEnd"],
+                        text=corpus[entity["offsetStart"] : entity["offsetEnd"]],
+                        score=entity["nerd_selection_score"]
+                    )
+                )
             )
 
             concept_relations = request_entity_fishing_concept_lookup(
@@ -122,7 +128,11 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
                     ]
                 )
 
-                concept.mappings = [(stmt['propertyId'],stmt['value']) for stmt in concept_relations["statements"] if "valueType" in stmt and stmt['valueType'] == 'external-id']
+                concept.mappings = [
+                    (stmt["propertyId"], stmt["value"])
+                    for stmt in concept_relations["statements"]
+                    if "valueType" in stmt and stmt["valueType"] == "external-id"
+                ]
 
         concepts = list(concept_index.values())
 
