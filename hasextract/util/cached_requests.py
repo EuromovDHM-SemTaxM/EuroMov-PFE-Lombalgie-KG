@@ -33,12 +33,12 @@ def get(url: str, headers, timeout=None, key=None, data=None, json=None):
     return page_text
 
 
-def post(url: str, headers, data=None, json=None, timeout=None, key=None):
+def post(url: str, headers, data=None, json=None, timeout=None, key=None, invalidate_callback=None):
     if not key:
         key = url
     page_text = redis.get(key)
     try:
-        if not page_text:
+        if (not page_text) or (invalidate_callback and invalidate_callback(page_text)):
             result = requests.post(
                 url, headers=headers, timeout=timeout, data=data, json=json
             )

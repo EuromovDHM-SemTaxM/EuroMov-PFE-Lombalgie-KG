@@ -1,10 +1,17 @@
 
 import logging
-
+import spacy
 
 logger = logging.getLogger()
 
-def _chunk_sentences(sentences, max_chars):
+def get_spacy_pipeline(lang):
+    return (
+        spacy.load("en_core_web_sm")
+        if lang == "en"
+        else spacy.load(f"{lang}_core_news_sm")
+    )
+
+def chunk_sentences(sentences, max_chars):
     sentences_with_fractional_splits = []
     logger.debug("Fractional splits...")
     for sent in sentences:
@@ -32,7 +39,7 @@ def _chunk_sentences(sentences, max_chars):
     return chunks
 
 
-def _chunk_sentences_by_span(text, sentence_spans, max_chars):
+def chunk_sentences_by_span(text, sentence_spans, max_chars):
     logger.debug("Fractional splits...")
     fractional_spans = []
     for span in sentence_spans:
@@ -59,7 +66,7 @@ def _chunk_sentences_by_span(text, sentence_spans, max_chars):
     return chunks
 
 
-def _break_up_sentences(text, sentence_spans, max_chars):
+def break_up_sentences(text, sentence_spans, max_chars):
     logger.debug("Breaking up sentences beyond API limit...")
     fractional_spans = []
     for span in sentence_spans:

@@ -17,10 +17,11 @@ from hasextract.kext.knowledgeextractor import (
     KnowledgeExtractor,
     ConceptType,
     Mention,
-    RelationInstance,
+    OntologyRelation,
+    Relation,
 )
 from hasextract.util.cached_requests import get
-from hasextract.util.segmentation import _break_up_sentences
+from hasextract.util.segmentation import break_up_sentences
 
 
 logger = logging.getLogger()
@@ -133,7 +134,7 @@ class SpotlightKnowledgeExtractor(KnowledgeExtractor):
 
         doc = nlp(corpus)
         sentence_spans = [(sent.start_char, sent.end_char) for sent in doc.sents]
-        chunks_spans = _break_up_sentences(corpus, sentence_spans, max_chars)
+        chunks_spans = break_up_sentences(corpus, sentence_spans, max_chars)
 
         for chunk_span in tqdm(chunks_spans, "Processing sentences with Spotlight"):
             chunk = (
@@ -156,7 +157,7 @@ class SpotlightKnowledgeExtractor(KnowledgeExtractor):
         for concept in concepts:
             concept_relations = relation_index[concept.idx]
             relations.extend(
-                RelationInstance(
+                OntologyRelation(
                     source=concept,
                     target=concept_index[relation[1]],
                     name=relation[0],

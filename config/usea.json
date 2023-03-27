@@ -1,3 +1,6 @@
 {
-  "endpoint": "https://nlp.uniroma1.it/usea/api"
+  "endpoint": "http://localhost:22000/process",
+  "babelnet_endpoint": "",
+  "verbatlas_endpoint": "https://verbatlas.org/api/verbatlas/predicate",
+  "babelnet_key": "c211260c-33fa-456e-9ea8-536e47575a76"
 }

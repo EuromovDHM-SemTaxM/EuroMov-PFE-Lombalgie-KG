@@ -21,9 +21,10 @@ from hasextract.kext.knowledgeextractor import (
     Mention,
 )
 from hasextract.util.cached_requests import (
+    get,
     post,
 )
-from hasextract.util.segmentation import _break_up_sentences
+from hasextract.util.segmentation import break_up_sentences, get_spacy_pipeline
 
 logger = logging.getLogger()
 
@@ -41,6 +42,7 @@ def _extract_lexical_concepts(response, token_spans, chunk_span, concept_index):
         start_offset = token_spans[sense["start"]][0]
         end_offset = token_spans[sense["end"] - 1][1]
         synset = sense["features"]["synset"]
+        lemmas = [entry['features']['lemma'] for entry in response['texts'][sense["start"]:sense["end"]]]
         idx = f"http://babelnet.org/rdf/page/{synset.replace('bn:', 's')}"
         if idx not in concept_index:
             concept = LexicalConcept(
@@ -48,6 +50,7 @@ def _extract_lexical_concepts(response, token_spans, chunk_span, concept_index):
                 label=synset,
                 concept_type=ConceptType.LEXICAL_SENSE,
                 instances=[],
+                lemma=" ".join(lemmas)
             )
             concept_index[idx] = concept
             concepts.append(concept)
@@ -64,6 +67,50 @@ def _extract_lexical_concepts(response, token_spans, chunk_span, concept_index):
 
     return concepts, concept_index
 
+# def query_relations(uri):
+#     try:
+
+#         relations = []
+#         # wikidata_id = wikidata_id[1:]
+#         endpoint = USEAConfig().babelnet_sparql_endpoint
+#         params = {
+#             "query": f"select distinct ?rel ?target where {{<{uri}> ?rel ?target.}}",
+#             "format": "application/sparql-results+json",
+#             "timeout": 0,
+#             "signal_void": "on",
+#         }
+#         if result := get(f"{endpoint}?{urlencode(params)}", headers={}):
+#             ret = json.loads(result)
+#             relations.extend(
+#                 (r["rel"]["value"], r["target"]["value"])
+#                 for r in ret["results"]["bindings"]
+#             )
+
+#     except json.decoder.JSONDecodeError:
+#         return None
+
+#     return relations
+
+frame_id_cache = {}
+def get_frame_ids(name, lemma):
+    if name in frame_id_cache:
+        return frame_id_cache[name]
+    params = {
+        "lemma": lemma,
+    }
+    if not (
+        result := get(
+            f"{USEAConfig().verbatlas_endpoint}?{urlencode(params)}",
+            headers={},
+        )
+    ):
+        return None
+    ret = json.loads(result)
+    for synset in ret:
+        fid = synset["va_frame_id"]
+        frame_id_cache[synset["va_frame_name"]] = fid
+    return frame_id_cache[name]
+    
 
 def _extract_semantic_roles(response, token_spans, chunk_span):
     initial_roles = response["annotations"]["srl"]
@@ -101,10 +148,7 @@ class USEAKnowledgeExtractor(KnowledgeExtractor):
         import spacy
 
         lang = parameters["source_language"]
-        if lang == "en":
-            nlp = spacy.load("en_core_web_sm")
-        else:
-            nlp = spacy.load(f"{lang}_core_news_sm")
+        nlp = get_spacy_pipeline(lang)
 
         max_chars = 500
 
@@ -112,7 +156,7 @@ class USEAKnowledgeExtractor(KnowledgeExtractor):
     
         doc = nlp(corpus)
         sentence_spans = [(sent.start_char, sent.end_char) for sent in doc.sents]
-        chunks_spans = _break_up_sentences(corpus, sentence_spans, max_chars)
+        chunks_spans = break_up_sentences(corpus, sentence_spans, max_chars)
 
         concepts = []
         semantic_roles = []
@@ -121,6 +165,7 @@ class USEAKnowledgeExtractor(KnowledgeExtractor):
             chunk = (
                 corpus[chunk_span[0] : chunk_span[1]]
                 .replace("\\n", " ")
+                .replace("\n", " ")
                 .replace("’", "'")
             )
             m = hashlib.sha256()
@@ -134,6 +179,7 @@ class USEAKnowledgeExtractor(KnowledgeExtractor):
                     json=request_params,
                     headers={},
                     key=key,
+                    #invalidate_callback=lambda x: "failure" in json.loads(x)
                 ):
                     response = json.loads(response)
                     if "failure" not in response:

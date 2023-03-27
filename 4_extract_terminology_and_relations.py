@@ -11,6 +11,7 @@ from hasextract.evaluation.evaluator import (
 )
 
 from hasextract.kext.knowledgeextractor import CompositeKnowledgeExtractor
+from hasextract.rdf_mapper.mapper import LLODKGMapper
 from hasextract.rdf_mapper.merger import FlatMerger
 from hasextract.kext.modules.entityfishing import EntityFishingKnowledgeExtractor
 from hasextract.kext.modules.ncboannotator import NCBOAnnotatorKnowledgeExtractor
@@ -65,6 +66,23 @@ parser.add_argument(
     "of the text file containing the extracted corpus. Default: full_text_deduplicated.txt",
 )
 
+parser.add_argument(
+    "--prefix-name",
+    nargs=1,
+    dest="prefix_name",
+    default=["kext"],
+    help="Prefix name for the model. Default: kext",
+)
+
+parser.add_argument(
+    "--prefix-uri",
+    nargs=1,
+    dest="prefix_uri",
+    default=["http://w3id.org/kext/"],
+    help="Prefix URI for the model. Default: http://w3id.org/kext/",
+)
+
+
 if __name__ == "__main__":
     args = parser.parse_args()
 
@@ -77,7 +95,7 @@ if __name__ == "__main__":
             EntityFishingKnowledgeExtractor('method contains "entityfishing"'),
             SpotlightKnowledgeExtractor('method contains "spotlight"'),
             NCBOAnnotatorKnowledgeExtractor('method contains "ncboannotator"'),
-            USEAKnowledgeExtractor('method contains "usea"')
+            USEAKnowledgeExtractor('method contains "usea"'),
         ]
     )
 
@@ -113,15 +131,29 @@ if __name__ == "__main__":
         logger.info("Running evaluation pipeline...")
         evaluation = composite_evaluator(extraction)
         logger.info(json.dumps(evaluation, indent=2))
-        
+
         with open(Path(file.parent, eval_name), "w") as f:
             json.dump(evaluation, f, indent=2)
 
         for extractor in extraction:
             with open(Path(file.parent, f"{result_name}_{extractor}.json"), "w") as f:
-                f.write(extraction[extractor].json(exclude_none=True).encode().decode('unicode-escape'))
-                
+                f.write(
+                    extraction[extractor]
+                    .json(exclude_none=True)
+                    .encode()
+                    .decode("unicode-escape")
+                )
+
         merger = FlatMerger()
         merged_extracted = merger(extraction)
-        
-        pass
+
+        rdf_mapper = LLODKGMapper(
+            base_uri=args.prefix_uri[0],
+            prefix_name=args.prefix_name[0],
+            kg_description=f"Knowledge extracted from {file.parent.name}",
+        )
+        rdf_mapper(
+            document_name=file.parent.name,
+            extracted_knowledge=merged_extracted,
+            target_file=f'{str(Path(file.parent, f"{file.parent.name}.ttl"))}',
+        )

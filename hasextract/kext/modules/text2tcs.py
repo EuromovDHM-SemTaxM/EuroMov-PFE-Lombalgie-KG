@@ -8,7 +8,7 @@ from confz import ConfZ, ConfZFileSource
 from elg import Service
 from tqdm import tqdm
 
-from hasextract.util.segmentation import _chunk_sentences
+from hasextract.util.segmentation import chunk_sentences
 
 
 
@@ -16,10 +16,11 @@ logger = getLogger()
 
 from hasextract.kext.knowledgeextractor import (
     Concept,
+    ConceptRelation,
     ExtractedKnowledge,
     KnowledgeExtractor,
     ConceptType,
-    RelationInstance,
+    Relation,
     TermConcept,
 )
 
@@ -56,7 +57,7 @@ class Text2TCSExtractor(KnowledgeExtractor):
         logger.debug("Chunking sentences to fit API limits... ")
         sentences = sent_tokenize(corpus)
         if len(corpus) > max_chars:
-            chunks = _chunk_sentences(sentences, max_chars)
+            chunks = chunk_sentences(sentences, max_chars)
         else:
             chunks = [corpus]
 
@@ -97,7 +98,7 @@ class Text2TCSExtractor(KnowledgeExtractor):
                 logger.debug(e)
 
         relations = [
-            RelationInstance(
+            ConceptRelation(
                 source=concept_index[relation["source"]],
                 target=concept_index[relation["related concept"]],
                 name=relation["type"],

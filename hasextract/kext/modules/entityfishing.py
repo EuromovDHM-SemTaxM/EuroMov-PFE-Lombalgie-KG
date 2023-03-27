@@ -13,7 +13,8 @@ from hasextract.kext.knowledgeextractor import (
     KnowledgeExtractor,
     ConceptType,
     Mention,
-    RelationInstance,
+    OntologyRelation,
+    Relation,
 )
 from hasextract.util.cached_requests import get, post
 
@@ -140,7 +141,7 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
         for concept in concepts:
             concept_relations = relation_index[concept.idx]
             relations.extend(
-                RelationInstance(
+                OntologyRelation(
                     source=concept, target=concept_index[relation[1]], name=relation[0]
                 )
                 for relation in concept_relations

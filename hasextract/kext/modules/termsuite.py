@@ -8,10 +8,12 @@ from pydantic import AnyUrl
 
 from hasextract.kext.knowledgeextractor import (
     Concept,
+    ConceptRelation,
     ExtractedKnowledge,
     KnowledgeExtractor,
     ConceptType,
-    RelationInstance,
+    LexicalRelation,
+    Relation,
     TermConcept,
 )
 from hasextract.util.cached_requests import post
@@ -31,7 +33,7 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
         m.update(corpus.encode("utf-8"))
         # Creating a unique key for the cache.
         key = f"termsuite_{m.hexdigest()}"
-        
+
         if not (
             response := post(
                 f"{TermSuiteConfig().endpoint}?language={parameters['source_language']}",
@@ -40,7 +42,7 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
                     "Accept": "application/json",
                     "Content-Type": "plain/text",
                 },
-                key=key
+                key=key,
             )
         ):
             return []
@@ -60,19 +62,39 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
             )
             concept_index[props["key"]] = concept
             concepts.append(concept)
-        relations = [
-            RelationInstance(
-                source=concept_index[relation["from"]],
-                target=concept_index[relation["to"]],
-                name=relation["type"],
-            )
-            for relation in response["relations"]
-        ]
+            relations = []
+            concepts_to_delete = set()
+        for relation in response["relations"]:
+            if relation["type"] == "var":
+                source = concept_index[relation["from"]]
+                if source.altLabels is None:
+                    source.altLabels = []
+                source.altLabels.append(concept_index[relation["to"]].label)
+                concepts_to_delete.add(concept_index[relation["to"]])
+            elif relation["type"] == "hasext":
+                relations.append(
+                    ConceptRelation(
+                        source=concept_index[relation["from"]],
+                        target=concept_index[relation["to"]],
+                        name="http://www.w3.org/2004/02/skos/core#narrower",
+                    )
+                )
+            elif relation["type"] == "deriv":
+                relations.append(
+                    LexicalRelation(
+                        source=concept_index[relation["from"]],
+                        target=concept_index[relation["to"]],
+                        name=relation["type"],
+                    )
+                )
+
+        concepts = [c for c in concepts if c not in concepts_to_delete]
+
         return ExtractedKnowledge(
             name="Termsuite Terminology extraction result",
             agent="Termsuite REST",
             language=parameters["source_language"],
             source_text=corpus,
             concepts=concepts,
-            relations=relations
+            relations=relations,
         )

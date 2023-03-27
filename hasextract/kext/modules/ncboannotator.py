@@ -17,7 +17,7 @@ from hasextract.kext.knowledgeextractor import (
     Mention,
 )
 from hasextract.util.cached_requests import get
-from hasextract.util.segmentation import _chunk_sentences_by_span
+from hasextract.util.segmentation import chunk_sentences_by_span
 
 logger = logging.getLogger()
 
@@ -40,7 +40,7 @@ class NCBOAnnotatorKnowledgeExtractor(KnowledgeExtractor):
         logger.debug("Chunking sentences to fit API limits... ")
         sentence_spans = twt().span_tokenize(corpus)
         if len(corpus) > max_chars:
-            chunks_spans = _chunk_sentences_by_span(corpus, sentence_spans, max_chars)
+            chunks_spans = chunk_sentences_by_span(corpus, sentence_spans, max_chars)
         else:
             chunks_spans = [(0, len(corpus))]
 
@@ -80,7 +80,7 @@ class NCBOAnnotatorKnowledgeExtractor(KnowledgeExtractor):
                         Mention(
                             start=chunk_span[0] + annotation["from"],
                             end=chunk_span[0] + annotation["to"],
-                            text=corpus[chunk_span[0] + annotation["from"] - 1 : chunk_span[0] + annotation["to"]],
+                            text=corpus[chunk_span[0] + annotation["from"] : chunk_span[0] + annotation["to"]],
                         )
                         for annotation in entity["annotations"]
                     ]
