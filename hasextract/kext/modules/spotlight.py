@@ -13,7 +13,7 @@ from tqdm import tqdm
 from hasextract.kext.knowledgeextractor import (
     Concept,
     ExtractedKnowledge,
-    KBConcept,
+    KGConcept,
     KnowledgeExtractor,
     ConceptType,
     Mention,
@@ -86,7 +86,7 @@ def _extract_concepts_and_relations(
     for entity in response["Resources"]:
         idx = f"{entity['@URI']}"
         if idx not in concept_index:
-            concept = KBConcept(
+            concept = KGConcept(
                 idx=idx,
                 label=idx.split("/")[-1],
             )

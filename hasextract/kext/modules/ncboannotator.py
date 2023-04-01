@@ -11,7 +11,7 @@ from pydantic import AnyUrl
 from hasextract.kext.knowledgeextractor import (
     Concept,
     ExtractedKnowledge,
-    KBConcept,
+    KGConcept,
     KnowledgeExtractor,
     ConceptType,
     Mention,
@@ -70,7 +70,7 @@ class NCBOAnnotatorKnowledgeExtractor(KnowledgeExtractor):
                 for entity in response:
                     annotated_class = entity["annotatedClass"]
                     idx = f"{annotated_class['@id']}"
-                    concept = KBConcept(
+                    concept = KGConcept(
                         idx=idx,
                         label="",
                         concept_type=ConceptType.LINKED_ENTITY,

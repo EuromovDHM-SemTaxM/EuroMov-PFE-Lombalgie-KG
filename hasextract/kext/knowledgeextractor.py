@@ -63,9 +63,9 @@ class LexicalConcept(Concept):
         super(LexicalConcept, self).__init__(*args, **kwargs)
 
 
-class KBConcept(Concept):
+class KGConcept(Concept):
     def __init__(self, *args, **kwargs):
-        super(KBConcept, self).__init__(*args, **kwargs)
+        super(KGConcept, self).__init__(*args, **kwargs)
 
 
 class Relation(BaseModel):

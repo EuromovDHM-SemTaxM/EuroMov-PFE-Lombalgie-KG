@@ -9,7 +9,7 @@ from pydantic import AnyUrl
 from hasextract.kext.knowledgeextractor import (
     Concept,
     ExtractedKnowledge,
-    KBConcept,
+    KGConcept,
     KnowledgeExtractor,
     ConceptType,
     Mention,
@@ -92,7 +92,7 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
         for entity in response["entities"]:
             idx = f"{EntityFishingConfig().wikidata_prefix_uri}{entity['wikidataId']}"
             if idx not in concept_index:
-                concept = KBConcept(
+                concept = KGConcept(
                     idx=idx,
                     label=entity["rawName"]
                 )

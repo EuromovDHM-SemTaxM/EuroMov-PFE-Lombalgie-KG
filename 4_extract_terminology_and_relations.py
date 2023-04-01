@@ -10,8 +10,9 @@ from hasextract.evaluation.evaluator import (
     OverlapEvaluator,
 )
 
-from hasextract.kext.knowledgeextractor import CompositeKnowledgeExtractor
-from hasextract.rdf_mapper.mapper import LLODKGMapper
+from hasextract.kext.knowledgeextractor import AMRGraph, CompositeKnowledgeExtractor, ConceptRelation, Frame, KGConcept, LexicalConcept, LexicalRelation, OntologyRelation, SemanticRelation, TermConcept
+from hasextract.rdf_mapper.amrmapper import AMRMapper
+from hasextract.rdf_mapper.mapper import CompositeMapper, ConceptRelationMapper, KGConceptMapper, LexicalConceptMapper, LexicalRelationMapper, OntologyRelationMapper, SemanticRelationMapper, TermConceptMapper
 from hasextract.rdf_mapper.merger import FlatMerger
 from hasextract.kext.modules.entityfishing import EntityFishingKnowledgeExtractor
 from hasextract.kext.modules.ncboannotator import NCBOAnnotatorKnowledgeExtractor
@@ -20,7 +21,28 @@ from hasextract.kext.modules.tbx import TBXExtractor
 from hasextract.kext.modules.termsuite import TermsuiteKnowledgeExtractor
 from hasextract.kext.modules.text2tcs import Text2TCSExtractor
 from hasextract.kext.modules.usea import USEAKnowledgeExtractor
+from hasextract.rdf_mapper.slrmapper import SRLMapper
 from hasextract.util.logging import setup_logging
+
+
+from kglab import Measure
+
+def create_default_mapper(base_uri, prefix_name, kg_description):
+    composite_mapper = CompositeMapper(base_uri, prefix_name, kg_description)
+    composite_mapper.bind_mappers({
+        TermConcept: TermConceptMapper,
+        LexicalConcept: LexicalConceptMapper,
+        KGConcept: KGConceptMapper,
+        LexicalRelation: LexicalRelationMapper,
+        SemanticRelation: SemanticRelationMapper,
+        ConceptRelation: ConceptRelationMapper,
+        OntologyRelation: OntologyRelationMapper,
+        Frame: SRLMapper,
+        AMRGraph: AMRMapper
+    })
+    
+    return composite_mapper
+
 
 setup_logging(
     console_log_output="stdout",
@@ -147,13 +169,22 @@ if __name__ == "__main__":
         merger = FlatMerger()
         merged_extracted = merger(extraction)
 
-        rdf_mapper = LLODKGMapper(
+        kg = create_default_mapper(
             base_uri=args.prefix_uri[0],
             prefix_name=args.prefix_name[0],
             kg_description=f"Knowledge extracted from {file.parent.name}",
-        )
-        rdf_mapper(
-            document_name=file.parent.name,
-            extracted_knowledge=merged_extracted,
-            target_file=f'{str(Path(file.parent, f"{file.parent.name}.ttl"))}',
-        )
+        )(document_name=file.parent.name, extracted_knowledge=merged_extracted)
+
+        target_file = f'{str(Path(file.parent, f"{file.parent.name}.ttl"))}'
+        kg.save_rdf(target_file, format="ttl")
+        
+        m = Measure()
+        m.measure_graph(kg)
+        print("Nodes:", m.node_count)
+        print("Edges:", m.edge_count)
+        target_file_st = f'{str(Path(file.parent, f"{file.parent.name}_st.csv"))}'
+        target_file_pt = f'{str(Path(file.parent, f"{file.parent.name}_pt.csv"))}'
+        target_file_ot = f'{str(Path(file.parent, f"{file.parent.name}_ot.csv"))}'
+        m.s_gen.get_tally().to_csv(target_file_st)
+        m.p_gen.get_tally().to_csv(target_file_pt)
+        m.o_gen.get_tally().to_csv(target_file_ot)

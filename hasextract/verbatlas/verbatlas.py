@@ -12,8 +12,9 @@ class VerbAtlasConfig(ConfZ):
 
 
 class VerbAtlasFrame(BaseModel):
+    idx: str
     name: str
-    description: str 
+    description: str
     synset: str
     example: str
     gloss: str
@@ -36,19 +37,21 @@ class VerbAtlas:
                 frame_arg_map[frame_id] = {arg: [] for arg in args}
 
         with open(data_path / "VA_va2sp.tsv") as f:
-          for line in f.readlines()[1:]:
-            fields = line.strip().split("\t")
-            frame_id = fields[0]
-            frame_type = fields[1]
-            self.frame_type_index[frame_id] = frame_type
-            for i in range(2, len(fields), 2):
-              frame_arg_map[frame_id][fields[i]].extend(fields[i+1].split('|'))
-
+            for line in f.readlines()[1:]:
+                fields = line.strip().split("\t")
+                frame_id = fields[0]
+                frame_type = fields[1]
+                self.frame_type_index[frame_id] = frame_type
+                for i in range(2, len(fields), 2):
+                    frame_arg_map[frame_id][fields[i]].extend(fields[i + 1].split("|"))
 
         with open(data_path / "VA_frame_info.tsv") as f:
             for line in f.readlines()[1:]:
-                frame, name, description, synset, example, gloss = line.strip().split("\t")
+                frame, name, description, synset, example, gloss = line.strip().split(
+                    "\t"
+                )
                 frame_inst = VerbAtlasFrame(
+                    idx=frame,
                     name=name,
                     description=description,
                     example=example,
@@ -62,6 +65,6 @@ class VerbAtlas:
 
     def get_frame(self, frame_idx: str) -> VerbAtlasFrame:
         return self.frame_index[frame_idx]
-    
+
     def get_frame_by_name(self, name: str) -> VerbAtlasFrame:
         return self.name_index[name]

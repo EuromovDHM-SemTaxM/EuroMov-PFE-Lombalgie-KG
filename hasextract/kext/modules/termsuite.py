@@ -65,7 +65,7 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
             relations = []
             concepts_to_delete = set()
         for relation in response["relations"]:
-            if relation["type"] == "var":
+            if relation["type"] == "var" and concept_index[relation["to"]].instances:
                 source = concept_index[relation["from"]]
                 if source.altLabels is None:
                     source.altLabels = []
