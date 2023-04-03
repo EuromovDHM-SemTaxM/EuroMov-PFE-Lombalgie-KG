@@ -10,6 +10,26 @@ This software requires Python 3.9+ to run. Please first install the dependences 
 ## Main scripts of the framework and order of execution
 
 ### 1. PDF Extraction 
+PDF Extracction is performed by the `1_extract_text_from_pdfs.py`, which can be executed as `python 1_extract_text_from_pdfs.py input_path --target target_path`, 
+where: 
+- `input_path` is either a single pdf file or a directory containing pdf files 
+- `--target target_path` is an optional parameter indicating the target directory where the result of the extraction is saved. By default, this is `./extracted_data`. If the input was a file, a single sub directory is created, holding for name the base name of the input file (file name without the extention). If the input was a directory containing pdfs, then a sub directory is created for each pdf file (named as the base name of the pdf files). 
+
+The output directory structure is the following:
+
+```
+target_directory
+  |__pdf_directory_1
+  |  |__figures
+  |  |  |_figure_1.png
+  |  |  |_...
+  |  |__tables
+  |  |  |_table_1.csv
+  |  |  |_...
+  |  |_full_text.txt
+  |__pdf_directory_2
+     |_...
+     ...
 
 ### 2&3. Preprocessing and Deduplication
 
