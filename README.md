@@ -1,7 +1,23 @@
 # EuroMov DHM LLOD Knowledge Extractor
+This repository contains the implementation described in the paper `Knowledge Extraction of French Clinical Protocol Recommendations as
+Linguistic Linked Open Data` submitted at LDK 2023. 
+As stated, this is a first prototype that will be the basis of further development, but it is fully functional in terms of what is describerd in the paper.
+You may find the full evaluation results for the described use-case at the end of this README. Likewise, wou may find the final Turtle output here: [TO ADD].
+
+## Dependencies
+This software requires Python 3.9+ to run. Please first install the dependences in `requirements.txt` by running `pip install -r requirements.txt` from the cloned project directory.
+
+## Main scripts of the framework and order of execution
+
+### 1. PDF Extraction 
+
+### 2&3. Preprocessing and Deduplication
+
+### 4. Knowledge Extraction and RDF Generation
 
 
-## Full evaluation report from paper
+
+## Full evaluation report from the paper for the considered use-case
 ```"DescriptiveStatisticsEvaluator": {
     "Termsuite REST": {
       "num_entities": 3092,
