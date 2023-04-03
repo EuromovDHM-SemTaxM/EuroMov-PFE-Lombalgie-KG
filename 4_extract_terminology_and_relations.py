@@ -10,7 +10,7 @@ from hasextract.evaluation.evaluator import (
     OverlapEvaluator,
 )
 
-from hasextract.kext.knowledgeextractor import AMRGraph, CompositeKnowledgeExtractor, ConceptRelation, Frame, KGConcept, LexicalConcept, LexicalRelation, OntologyRelation, SemanticRelation, TermConcept
+from hasextract.kext.knowledgeextractor import AMRGraph, CompositeKnowledgeExtractor, ConceptRelation, Frame, KGConcept, LexicalSense, LexicalRelation, OntologyRelation, SemanticRelation, TermConcept
 from hasextract.rdf_mapper.amrmapper import AMRMapper
 from hasextract.rdf_mapper.mapper import CompositeMapper, ConceptRelationMapper, KGConceptMapper, LexicalConceptMapper, LexicalRelationMapper, OntologyRelationMapper, SemanticRelationMapper, TermConceptMapper
 from hasextract.rdf_mapper.merger import FlatMerger
@@ -31,7 +31,7 @@ def create_default_mapper(base_uri, prefix_name, kg_description):
     composite_mapper = CompositeMapper(base_uri, prefix_name, kg_description)
     composite_mapper.bind_mappers({
         TermConcept: TermConceptMapper,
-        LexicalConcept: LexicalConceptMapper,
+        LexicalSense: LexicalConceptMapper,
         KGConcept: KGConceptMapper,
         LexicalRelation: LexicalRelationMapper,
         SemanticRelation: SemanticRelationMapper,

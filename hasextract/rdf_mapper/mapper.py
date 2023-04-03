@@ -13,7 +13,7 @@ from hasextract.kext.knowledgeextractor import (
     ExtractedKnowledge,
     Frame,
     KGConcept,
-    LexicalConcept,
+    LexicalSense,
     LexicalRelation,
     Mention,
     OntologyRelation,
@@ -365,9 +365,9 @@ class TermConceptMapper(OntolexMapper):
         label = element.label
         uuid = self._uuid(f"{idx}_{label}")
         if uuid not in self.uri_index:
-            concept_uri = URIRef(idx)
+            element.idx = idx if "http" in idx else str(self._bns()[f"tc_{uuid}"])
             _, _ = self._create_ontolex_common(document_uri, element, document_text)
-            self.uri_index[uuid] = concept_uri
+            self.uri_index[uuid] = URIRef(element.idx)
 
 
 class LexicalConceptMapper(OntolexMapper):
@@ -389,7 +389,7 @@ class LexicalConceptMapper(OntolexMapper):
             uri_index=uri_index,
         )
 
-    def __call__(self, document_uri, document_text, element: LexicalConcept):
+    def __call__(self, document_uri, document_text, element: LexicalSense):
         idx = element.idx
         label = element.label
         uuid = self._uuid(f"{idx}_{label}")
@@ -425,7 +425,7 @@ class KGConceptMapper(OntolexMapper):
             uri_index=uri_index,
         )
 
-    def __call__(self, document_uri, document_text, element: LexicalConcept):
+    def __call__(self, document_uri, document_text, element: LexicalSense):
         idx = element.idx
         label = element.label
         uuid = self._uuid(f"{idx}_{label}")

@@ -11,7 +11,6 @@ from hasextract.kext.knowledgeextractor import (
     ConceptRelation,
     ExtractedKnowledge,
     KnowledgeExtractor,
-    ConceptType,
     LexicalRelation,
     Relation,
     TermConcept,
@@ -56,7 +55,6 @@ class TermsuiteKnowledgeExtractor(KnowledgeExtractor):
             concept = TermConcept(
                 idx=idx,
                 label=term,
-                concept_type=ConceptType.EXTRACTED_TERM,
                 rank=props["rank"],
                 rule=props["rule"],
             )

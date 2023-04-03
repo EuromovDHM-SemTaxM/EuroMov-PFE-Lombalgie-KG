@@ -13,7 +13,6 @@ from hasextract.kext.knowledgeextractor import (
     ExtractedKnowledge,
     KGConcept,
     KnowledgeExtractor,
-    ConceptType,
     Mention,
 )
 from hasextract.util.cached_requests import get
@@ -73,7 +72,6 @@ class NCBOAnnotatorKnowledgeExtractor(KnowledgeExtractor):
                     concept = KGConcept(
                         idx=idx,
                         label="",
-                        concept_type=ConceptType.LINKED_ENTITY,
                     )
 
                     concept.instances = [

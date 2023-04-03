@@ -14,12 +14,6 @@ from hasextract.util.segmentation import get_spacy_pipeline
 logger = logging.getLogger()
 
 
-class ConceptType(Enum):
-    LINKED_ENTITY = 0
-    EXTRACTED_TERM = 1
-    LEXICAL_SENSE = 2
-
-
 class Mention(BaseModel):
     start: int
     end: int
@@ -57,10 +51,10 @@ class TermConcept(Concept):
         super(TermConcept, self).__init__(*args, **kwargs)
 
 
-class LexicalConcept(Concept):
+class LexicalSense(Concept):
     
     def __init__(self, *args, **kwargs):
-        super(LexicalConcept, self).__init__(*args, **kwargs)
+        super(LexicalSense, self).__init__(*args, **kwargs)
 
 
 class KGConcept(Concept):

@@ -11,14 +11,11 @@ from pydantic import AnyUrl
 from tqdm import tqdm
 
 from hasextract.kext.knowledgeextractor import (
-    Concept,
     ExtractedKnowledge,
     KGConcept,
     KnowledgeExtractor,
-    ConceptType,
     Mention,
     OntologyRelation,
-    Relation,
 )
 from hasextract.util.cached_requests import get
 from hasextract.util.segmentation import break_up_sentences

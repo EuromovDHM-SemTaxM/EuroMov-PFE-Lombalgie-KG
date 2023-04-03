@@ -16,8 +16,7 @@ from hasextract.kext.knowledgeextractor import (
     Frame,
     FrameArgument,
     KnowledgeExtractor,
-    ConceptType,
-    LexicalConcept,
+    LexicalSense,
     Mention,
 )
 from hasextract.util.cached_requests import (
@@ -45,10 +44,9 @@ def _extract_lexical_concepts(response, token_spans, chunk_span, concept_index):
         lemmas = [entry['features']['lemma'] for entry in response['texts'][sense["start"]:sense["end"]]]
         idx = f"http://babelnet.org/rdf/page/{synset.replace('bn:', 's')}"
         if idx not in concept_index:
-            concept = LexicalConcept(
+            concept = LexicalSense(
                 idx=idx,
                 label=synset,
-                concept_type=ConceptType.LEXICAL_SENSE,
                 instances=[],
                 lemma=" ".join(lemmas)
             )

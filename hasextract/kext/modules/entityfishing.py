@@ -7,14 +7,12 @@ from confz import ConfZ, ConfZFileSource
 from pydantic import AnyUrl
 
 from hasextract.kext.knowledgeextractor import (
-    Concept,
+    
     ExtractedKnowledge,
     KGConcept,
     KnowledgeExtractor,
-    ConceptType,
     Mention,
     OntologyRelation,
-    Relation,
 )
 from hasextract.util.cached_requests import get, post
 

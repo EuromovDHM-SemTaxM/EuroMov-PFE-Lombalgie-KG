@@ -19,7 +19,6 @@ from hasextract.kext.knowledgeextractor import (
     ConceptRelation,
     ExtractedKnowledge,
     KnowledgeExtractor,
-    ConceptType,
     Relation,
     TermConcept,
 )
