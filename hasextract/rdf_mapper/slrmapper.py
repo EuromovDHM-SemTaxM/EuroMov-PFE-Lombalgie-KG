@@ -63,6 +63,9 @@ class SRLMapper(OntolexMapper):
             "Co-Patient": ["gfe", "Co_Patient"],
             "Product": ["gfe", "Product"],
             "Asset": ["gfe", "Asset"],
+            "Negation": ["gfe", "Negation"],
+            "Adverbial": ["gfe", "Adverbial"],
+            "Modal": ["gfe", "Modal"],
         }
 
     def __call__(self, document_uri, document_text, element: Frame):
@@ -86,23 +89,48 @@ class SRLMapper(OntolexMapper):
             frame_uri, self._ns("framenet").definition, Literal(frame_info.description)
         )
         self._add(frame_uri, self._ns("framenet").frame_ID, Literal(frame_info.idx))
-        
-        self._create_web_annotation(frame_uri, [Mention(document_uri, element.start, element.end)])
-        
+
+        self._create_web_annotation(
+            frame_uri,
+            [
+                Mention(
+                    start=element.start,
+                    end=element.end,
+                    text=document_text[element.start : element.end],
+                )
+            ],
+            document_uri,
+            document_text,
+        )
+
         for frame_element in frame_info.frame_elements:
             role_uuid = self._uuid(frame_element)
             if role_uuid not in self.uri_index:
-                mapping = self.frame_role_mapping[frame_element]
+                
+                mapping = self.frame_role_mapping[frame_element]if frame_element in self.frame_role_mapping else ["gfe", frame_element]
                 role_uri = self._ns(mapping[0])[mapping[1]]
                 self._add(frame_uri, self._ns("framenet").vnRole, role_uri)
                 self._add(frame_uri, self._ns("framenet").hasFrameElement, role_uri)
-                self._create_web_annotation(role_uri, [Mention(document_uri, frame_element.start, frame_element.end)])
                 self.uri_index[role_uuid] = role_uri
             else:
                 role_uri = self.uri_index[role_uuid]
-            
 
-        synset = frame_info.synset.split(":")[1]
-        ls_uri = self._create_lexical_sense(str(self._ns("bn")[f"s{synset}"]))
-        self._add(ls_uri, self._ns("ontolex").denotes, frame_uri)
-
+        for argument in element.arguments:
+            mapping = self.frame_role_mapping[argument.role]if argument.role in self.frame_role_mapping else ["gfe", argument.role]
+            argument_uri = self._ns(mapping[0])[mapping[1]]
+            self._create_web_annotation(
+                argument_uri,
+                [
+                    Mention(
+                        start=argument.start,
+                        end=argument.end,
+                        text=document_text[argument.start : argument.end],
+                    )
+                ],
+                document_uri,
+                document_text,
+            )
+        if frame_info.synset and len(frame_info.synset) > 1:
+            synset = frame_info.synset.split(":")[1]
+            ls_uri = self._create_lexical_sense(str(self._ns("bn")[f"s{synset}"]))
+            self._add(ls_uri, self._ns("ontolex").denotes, frame_uri)

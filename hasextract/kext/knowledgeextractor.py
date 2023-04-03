@@ -142,9 +142,11 @@ class ExtractedKnowledge(BaseModel):
             
             concept.language = values.get("language")
             
-            label = concept.label
-            lemmas = [token.lemma_ for token in nlp(label)]
-            concept.lemma = " ".join(lemmas)
+            if not concept.lemma or len(concept.lemma) == 0:
+                concept.lemma = concept.label
+                label = concept.label
+                lemmas = [token.lemma_ for token in nlp(label)]
+                concept.lemma = " ".join(lemmas)
 
 
         
