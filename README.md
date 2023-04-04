@@ -2,7 +2,7 @@
 This repository contains the implementation described in the paper `Knowledge Extraction of French Clinical Protocol Recommendations as
 Linguistic Linked Open Data` submitted at LDK 2023. 
 As stated, this is a first prototype that will be the basis of further development, but it is fully functional in terms of what is describerd in the paper.
-You may find the full evaluation results for the described use-case at the end of this README. Likewise, wou may find the final Turtle output here: [TO ADD].
+You may find the full evaluation results for the described use-case at the end of this README. Likewise, wou may find the final contents of the output here: [paper_output_reco315_rapport_lombalgie_2019_04_02_extraction.zip](https://github.com/EuromovDHM-SemTaxM/EuroMov-PFE-Lombalgie-KG/raw/master/paper_output_reco315_rapport_lombalgie_2019_04_02_extraction.zip). 
 
 ## Dependencies
 This software requires Python 3.9+ to run. Please first install the dependences in `requirements.txt` by running `pip install -r requirements.txt` from the cloned project directory.
