@@ -69,7 +69,7 @@ options:
   --endpoint ENDPOINT, -e ENDPOINT
                         SPARQL Endpoint where to materialize the model
   --corpus_file CORPUS_FILE
-                        if the input is a directory name, this parameter gives the name of the text file containing the extracted corpus. Default: full_text_deduplicated.txt
+                        if the input is a directory name, this parameter gives the name of the text file containing the extracted corpus. Default: deduplicated.txt
   --prefix-name PREFIX_NAME
                         Prefix name for the model. Default: kext
   --prefix-uri PREFIX_URI
