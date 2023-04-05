@@ -55,6 +55,8 @@ Tu run deduplication, one may run `python 3_deduplicate.py` with the following s
 ### 4. Knowledge Extraction and RDF Generation
 The knowledge extraction and KG generation script can be run with the following syntax: 
 ```
+usage: 4_extract_terminology_and_relations.py [-h] [--extractors EXTRACTORS [EXTRACTORS ...]] [--endpoint ENDPOINT] [--corpus_file CORPUS_FILE] [--prefix-name PREFIX_NAME] [--prefix-uri PREFIX_URI] path
+
 Knowledge Extractor
 
 positional arguments:
@@ -63,7 +65,7 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --extractors EXTRACTORS [EXTRACTORS ...], -x EXTRACTORS [EXTRACTORS ...]
-                        List of knowledge extractors to include. Possible: tbx, text2tcs, termsuite. Default: text2tcs, termsuite.
+                        List of knowledge extractors to include. Possible: text2tcs, termsuite, entityfishing, spotlight, ncboannotator, usea. Default: text2tcs, termsuite.
   --endpoint ENDPOINT, -e ENDPOINT
                         SPARQL Endpoint where to materialize the model
   --corpus_file CORPUS_FILE
@@ -74,6 +76,8 @@ options:
                         Prefix URI for the model. Default: http://w3id.org/kext/
 ```  
 
+## Configuration and deployment of required APIs and tools
+This section will give some instructions and recommendations on how to configure and set-up the various services supported by the framework.
 
 ## Full evaluation report from the paper for the considered use-case
 ```"DescriptiveStatisticsEvaluator": {
