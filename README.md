@@ -79,6 +79,14 @@ options:
 ## Configuration and deployment of required APIs and tools
 This section will give some instructions and recommendations on how to configure and set-up the various services supported by the framework.
 
+
+### Termsuite 
+Termsuite is normally available as a java library that must be integrated in a java programme or used through a command-line interface. To facilitate integration, we have developed a very basic REST API wrapper around term suite. 
+The API version can be found here: https://github.com/EuromovDHM-SemTaxM/termsuite_rest_wrapper, you may run it by following the instructions. Once the API is running, termsuite can be used for knowledge extraction. 
+
+You can find the configuration in `config/termsuite.json`, please change the `endpoint` parameter to "http://HOST:PORT/extract_terminology", replacing HOST and PORT as required. 
+
+
 ## Full evaluation report from the paper for the considered use-case
 ```"DescriptiveStatisticsEvaluator": {
     "Termsuite REST": {
