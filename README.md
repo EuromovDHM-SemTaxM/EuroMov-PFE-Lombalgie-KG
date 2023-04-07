@@ -100,8 +100,23 @@ While there is an online API, it's meant for demo purposes and the threshold for
 The configuration parameter located in `config/entityfishing.json` are the REST API endpoint URL: `endpoint` and the wikidata entity prefix URI `wikidata_prefix_uri`, which is useful to rebuild proper URIs after querying the concept index. The default endpoint is the online one at `http://nerd.huma-num.fr/nerd/service`.
 
 ### III.4. Spotlight
-Spotlight can either be used through the online API or through locally deployed language-specific docker containers. The instructions to deploy over docker are: https://github.com/dbpedia-spotlight/spotlight-docker
+Spotlight can either be used through the online API or through locally deployed language-specific docker containers. The instructions to deploy over docker can be found here: https://github.com/dbpedia-spotlight/spotlight-docker
+There are three configuration keys in the configuration file `config/spotlight.json`: 
+ - `endpoint`: the REST API URL. For the official API: `https://api.dbpedia-spotlight.org/LANG/annotate` where LANG is the iso2 language code. 
+ - `dbpedia_prefix_uri`: the dbpedia prefix for resources for the language of the documents being processed `http://LANG.dbpedia.org/resource/`, where LANG is the iso2 language code. 
+ - `dbpedia_sparql_endpoint`: URI to a SPARQL endoint serving the corresponding language edition of spotlight. For hte official endpoint, use `https://fr.dbpedia.org/sparql`, where LANG is the iso2 language code. This is used to project relations unto extracted entities. 
 
+### III.5. NCBO Annotator
+The NCBO Annotator connector allows to interface with NCBO Bioportal Annotator or Annotator+ (https://bioportal.bioontology.org/) and any of the spin-off portals from the ontoportal alliance (https://ontoportal.org/). Paper: In the paper we used SIFR Bioportal, a french instance of Bioportal. 
+
+The recommended usage is to point to the official APIs, which have a robust capacity for reasonable workloads (less than a few hours of uninterrupted queries). You will need to create an account on the target portal and get the API key authentication token from your user profile page. 
+It is also possible to deploy a local instance with docker-compose or request a virtual machine from the Center for Biomedical Informatics at Stanford, however, you will have to load your own ontologies. Since many of the ontologies on the portals cannot be downloaded because of licensing restrictions,  making it difficult to replicate the same bredth. 
+
+There are two configuration parameters in the configuration file: `config/ncboannotator.json`:
+ - `endpoint`: the URL of the REST API of the targeted portal (e.g. `http://data.bioportal.lirmm.fr/annotator` for SIFR Bioportal). 
+ - `apikey`: The API key obtained from the portal (even the docker or VM deployments have a default API key). 
+
+### III.6. USEA
 
 
 ## Full evaluation report from the paper for the considered use-case
