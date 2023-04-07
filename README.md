@@ -86,6 +86,18 @@ The API version can be found here: https://github.com/EuromovDHM-SemTaxM/termsui
 
 You can find the configuration in `config/termsuite.json`, please change the `endpoint` parameter to "http://HOST:PORT/extract_terminology", replacing HOST and PORT as required. 
 
+### Text2TCS 
+Text2TCS is served through the European Language Grid, either through their online hosted API, or offline through a docker container. 
+Currently, the supplied docker command for local deployment does sucessfully deploy the service, but the specifics of which route should be queried is not documented (not the same as the ELG online service). For our purposes, we used the online ELG API through the `elg` python package. The service is metered, but the allowance of 1500 daily calls is generous: We chunk the text to fit into the 7500 query limit, which means that even for a fairly long documents, the number of chunks is limited (~1 per page). Given the processing speed, it's unlikely to reach the limit within a day. 
+
+Support for access through the API is a planned feature, but currently only accessible through the python wrapper. 
+The only configuration parameter in `config/text2tcs.json` is 'elg_app_id`, which should be left as-is. There are no API keys or authentication tokens, as the ELG python API will interactively give a link to open to get a one-time token that must then be pasted on the standard input. This means that the extraction process cannot be scheduled through cron when including the text2tcx extractor, it must be started manually to paste the token. Once the token is pasted the authentication is cached and valid for a few hours. 
+
+### Entity Fishing
+(Entity Fishing)[https://github.com/kermitt2/entity-fishing] is a multilingual Entity Linker for Wikidata, while it isn't as accurate as SOTA models (e.g. BLINK), it is production ready, and ships with models for 15 languages. Entity-fishing also offers an Wikidata concept query API, which allows fast retrieval of relations and information about a particular concept without having to use SPARQL queries. Our component uses this API to retrieve relations between identified entities within the text (dicarding other relations).
+While there is an online API, it's meant for demo purposes and the threshold for blacklisting IPs sending-out streams of queries fairly low. Which is why we recommend to deploy entity-fishing locally by following the procedure detailed here: (#running-entity-fishing-with-docker)[https://nerd.readthedocs.io/en/latest/docker.html#running-entity-fishing-with-docker].
+
+The configuration parameter located in `config/entityfishing.json` are the REST API endpoint URL: `endpoint` and the wikidata entity prefix URI `wikidata_prefix_uri`, which is useful to rebuild proper URIs after querying the concept index. The default endpoint is the online one at `http://nerd.huma-num.fr/nerd/service`.
 
 ## Full evaluation report from the paper for the considered use-case
 ```"DescriptiveStatisticsEvaluator": {
