@@ -66,8 +66,6 @@ options:
   -h, --help            show this help message and exit
   --extractors EXTRACTORS [EXTRACTORS ...], -x EXTRACTORS [EXTRACTORS ...]
                         List of knowledge extractors to include. Possible: text2tcs, termsuite, entityfishing, spotlight, ncboannotator, usea. Default: text2tcs, termsuite.
-  --endpoint ENDPOINT, -e ENDPOINT
-                        SPARQL Endpoint where to materialize the model
   --corpus_file CORPUS_FILE
                         if the input is a directory name, this parameter gives the name of the text file containing the extracted corpus. Default: deduplicated.txt
   --prefix-name PREFIX_NAME
