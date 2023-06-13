@@ -11,7 +11,6 @@ from tqdm import tqdm
 from hasextract.util.segmentation import chunk_sentences
 
 
-
 logger = getLogger()
 
 from hasextract.kext.knowledgeextractor import (
@@ -22,9 +21,6 @@ from hasextract.kext.knowledgeextractor import (
     Relation,
     TermConcept,
 )
-
-
-
 
 
 class Text2TCSConfig(ConfZ):
@@ -41,7 +37,6 @@ class Text2TCSExtractor(KnowledgeExtractor):
     def __call__(
         self, corpus: str, parameters: Dict[str, str] = None
     ) -> ExtractedKnowledge:
-
         cache_dir = Path("./.cache")
         cache_dir.mkdir(exist_ok=True)
 
@@ -81,8 +76,7 @@ class Text2TCSExtractor(KnowledgeExtractor):
                     for annotation in response.annotations[concept]:
                         idx = "text2tcs_" + annotation.features["id"]
                         mention = TermConcept(
-                            idx=idx,
-                            label=annotation.features["term"]
+                            idx=idx, label=annotation.features["term"]
                         )
                         concepts.append(mention)
                         concept_index[idx] = mention
