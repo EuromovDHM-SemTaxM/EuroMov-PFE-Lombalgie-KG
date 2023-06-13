@@ -10,9 +10,29 @@ from hasextract.evaluation.evaluator import (
     OverlapEvaluator,
 )
 
-from hasextract.kext.knowledgeextractor import AMRGraph, CompositeKnowledgeExtractor, ConceptRelation, Frame, KGConcept, LexicalSense, LexicalRelation, OntologyRelation, SemanticRelation, TermConcept
+from hasextract.kext.knowledgeextractor import (
+    AMRGraph,
+    CompositeKnowledgeExtractor,
+    ConceptRelation,
+    Frame,
+    KGConcept,
+    LexicalSense,
+    LexicalRelation,
+    OntologyRelation,
+    SemanticRelation,
+    TermConcept,
+)
 from hasextract.rdf_mapper.amrmapper import AMRMapper
-from hasextract.rdf_mapper.mapper import CompositeMapper, ConceptRelationMapper, KGConceptMapper, LexicalConceptMapper, LexicalRelationMapper, OntologyRelationMapper, SemanticRelationMapper, TermConceptMapper
+from hasextract.rdf_mapper.mapper import (
+    CompositeMapper,
+    ConceptRelationMapper,
+    KGConceptMapper,
+    LexicalConceptMapper,
+    LexicalRelationMapper,
+    OntologyRelationMapper,
+    SemanticRelationMapper,
+    TermConceptMapper,
+)
 from hasextract.rdf_mapper.merger import FlatMerger
 from hasextract.kext.modules.entityfishing import EntityFishingKnowledgeExtractor
 from hasextract.kext.modules.ncboannotator import NCBOAnnotatorKnowledgeExtractor
@@ -27,20 +47,23 @@ from hasextract.util.logging import setup_logging
 
 from kglab import Measure
 
+
 def create_default_mapper(base_uri, prefix_name, kg_description):
     composite_mapper = CompositeMapper(base_uri, prefix_name, kg_description)
-    composite_mapper.bind_mappers({
-        TermConcept: TermConceptMapper,
-        LexicalSense: LexicalConceptMapper,
-        KGConcept: KGConceptMapper,
-        LexicalRelation: LexicalRelationMapper,
-        SemanticRelation: SemanticRelationMapper,
-        ConceptRelation: ConceptRelationMapper,
-        OntologyRelation: OntologyRelationMapper,
-        Frame: SRLMapper,
-        AMRGraph: AMRMapper
-    })
-    
+    composite_mapper.bind_mappers(
+        {
+            TermConcept: TermConceptMapper,
+            LexicalSense: LexicalConceptMapper,
+            KGConcept: KGConceptMapper,
+            LexicalRelation: LexicalRelationMapper,
+            SemanticRelation: SemanticRelationMapper,
+            ConceptRelation: ConceptRelationMapper,
+            OntologyRelation: OntologyRelationMapper,
+            Frame: SRLMapper,
+            AMRGraph: AMRMapper,
+        }
+    )
+
     return composite_mapper
 
 
@@ -60,7 +83,7 @@ parser = argparse.ArgumentParser(description="Knowledge Extractor")
 parser.add_argument(
     "path",
     nargs=1,
-    help="Specify input extraction or input folder containing extractions",
+    help="Specify input extraction or input folder containing extractions.",
 )
 
 parser.add_argument(
@@ -68,7 +91,7 @@ parser.add_argument(
     "-x",
     nargs="+",
     default=["termsuite", "text2tcs"],
-    help="List of knowledge extractors to include. Possible: tbx, text2tcs, termsuite. Default: text2tcs, termsuite.",
+    help="List of knowledge extractors to include. Possible: text2tcs, termsuite, entityfishing, spotlight, ncboannotator, usea. Default: text2tcs, termsuite.",
 )
 
 parser.add_argument(
@@ -85,7 +108,7 @@ parser.add_argument(
     dest="corpus_file",
     default=["deduplicated.txt"],
     help="if the input is a directory name, this parameter gives the name "
-    "of the text file containing the extracted corpus. Default: full_text_deduplicated.txt",
+    "of the text file containing the extracted corpus. Default: deduplicated.txt",
 )
 
 parser.add_argument(
@@ -142,7 +165,6 @@ if __name__ == "__main__":
     result_name = "kext_result"
     eval_name = "eval.json"
     for input_file in tqdm(input_files, desc="Processing files"):
-
         input_text = ""
         for file in input_file:
             with open(file) as f:
@@ -177,7 +199,7 @@ if __name__ == "__main__":
 
         target_file = f'{str(Path(file.parent, f"{file.parent.name}.ttl"))}'
         kg.save_rdf(target_file, format="ttl")
-        
+
         m = Measure()
         m.measure_graph(kg)
         print("Nodes:", m.node_count)
