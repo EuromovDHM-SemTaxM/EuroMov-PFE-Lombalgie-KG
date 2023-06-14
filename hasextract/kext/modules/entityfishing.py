@@ -7,7 +7,6 @@ from confz import ConfZ, ConfZFileSource
 from pydantic import AnyUrl
 
 from hasextract.kext.knowledgeextractor import (
-    
     ExtractedKnowledge,
     KGConcept,
     KnowledgeExtractor,
@@ -67,7 +66,7 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
         request_params = {
             "text": corpus,
             "language": {"lang": parameters["source_language"]},
-            "mentions": ["wikipedia"],
+            "mentions": ["wikipedia", "ner"],
             "nbest": False,
             "sentence": False,
             "customisation": "generic",
@@ -90,10 +89,7 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
         for entity in response["entities"]:
             idx = f"{EntityFishingConfig().wikidata_prefix_uri}{entity['wikidataId']}"
             if idx not in concept_index:
-                concept = KGConcept(
-                    idx=idx,
-                    label=entity["rawName"]
-                )
+                concept = KGConcept(idx=idx, label=entity["rawName"])
                 concept_index[idx] = concept
 
             if not concept_index[idx].instances:
@@ -104,7 +100,7 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
                         start=entity["offsetStart"],
                         end=entity["offsetEnd"],
                         text=corpus[entity["offsetStart"] : entity["offsetEnd"]],
-                        score=entity["nerd_selection_score"]
+                        score=entity["nerd_selection_score"],
                     )
                 )
             )
@@ -121,7 +117,7 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
                             f"{EntityFishingConfig().wikidata_prefix_uri}{stmt['propertyId']}",
                             f"{EntityFishingConfig().wikidata_prefix_uri}{stmt['value']}",
                         )
-                        for stmt in concept_relations["statements"]
+                        for stmt in con cept_relations["statements"]
                         if not isinstance(stmt["value"], dict)
                         and stmt["value"].startswith("Q")
                     ]
@@ -146,7 +142,7 @@ class EntityFishingKnowledgeExtractor(KnowledgeExtractor):
                 if relation[1] in concept_index
             )
         return ExtractedKnowledge(
-            name="Entity Fishing Identified Wikidata Entities",
+            name="Entity Fishing Identified Wikidata Entities amd NER",
             agent="Entity Fishing",
             language=parameters["source_language"],
             source_text=corpus,
