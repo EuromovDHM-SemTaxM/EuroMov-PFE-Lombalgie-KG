@@ -5,8 +5,10 @@ from tqdm import tqdm
 
 from hasextract.util.sparql import sparql_query
 
+from urllib.parse import urlparse
 
-parser = argparse.ArgumentParser(description="PDF Extraction Tool")
+
+parser = argparse.ArgumentParser(description="SPARQL Document Retrieval")
 
 parser.add_argument(
     "input_path",
@@ -49,7 +51,7 @@ def process_extraction(query_file: Path, target_directory: Path, endpoint: str):
     df = sparql_query(query, endpoint)
 
     for _, row in tqdm(df.iterrows(), desc="Processing queried documents"):
-        doc_id = row["id"].strip().replace(" ", "_")
+        doc_id = urlparse(row["id"]).path.rsplit("/", 1)[-1]
         full_text = row["document_text"]
 
     with open(
@@ -65,8 +67,8 @@ if __name__ == "__main__":
 
     input_path = Path(args.input_path[0])
 
-    if input_path.is_file():
+    if not input_path.is_file():
         raise ValueError(
             "The input_path must be a single file containing the sparql query."
         )
-    process_extraction(input_path, target_directory)
+    process_extraction(input_path, target_directory, args.endpoint[0])

@@ -9,7 +9,7 @@ def sparql_service_to_dataframe(service, query):
 
     Credit to Ted Lawless https://lawlesst.github.io/notebook/sparql-dataframe.html
     """
-    sparql = SPARQLWrapper(service)
+    sparql = SPARQLWrapper.SPARQLWrapper(service)
     sparql.setQuery(query)
     sparql.setReturnFormat(SPARQLWrapper.JSON)
     result = sparql.query()
