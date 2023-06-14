@@ -54,10 +54,12 @@ def process_extraction(query_file: Path, target_directory: Path, endpoint: str):
         doc_id = urlparse(row["id"]).path.rsplit("/", 1)[-1]
         full_text = row["document_text"]
 
-    with open(
-        Path(final_target_directory, f"{doc_id}_full_text.txt"), "w", encoding="utf-8"
-    ) as f:
-        f.write(full_text)
+        with open(
+            Path(final_target_directory, f"{doc_id}_full_text.txt"),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            f.write(full_text)
 
 
 if __name__ == "__main__":
