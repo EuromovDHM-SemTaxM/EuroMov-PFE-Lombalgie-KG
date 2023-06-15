@@ -33,7 +33,6 @@ class SpotlightConfig(ConfZ):
 
 def query_relations(uri):
     try:
-
         relations = []
         # wikidata_id = wikidata_id[1:]
         endpoint = SpotlightConfig().dbpedia_sparql_endpoint
@@ -113,7 +112,6 @@ class SpotlightKnowledgeExtractor(KnowledgeExtractor):
         super().__init__(trigger_condition)
 
     def __call__(self, corpus: str, parameters: Dict[str, str] = None):
-
         import spacy
 
         lang = parameters["source_language"]
