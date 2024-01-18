@@ -1,5 +1,5 @@
 # EuroMov DHM LLOD Knowledge Extractor
-This is a first prototype that will be the basis of further development, but it is fully functional in terms of what is describerd in the paper.
+This is a first prototype that will be the basis of further development, but it is fully functional in terms of what is described in the upcoming preprint.
 You may find the full evaluation results for the described use-case at the end of this README. Likewise, wou may find the final contents of the output here: [paper_output_reco315_rapport_lombalgie_2019_04_02_extraction.zip](https://github.com/EuromovDHM-SemTaxM/EuroMov-PFE-Lombalgie-KG/raw/master/paper_output_reco315_rapport_lombalgie_2019_04_02_extraction.zip). 
 
 ## I. Dependencies
