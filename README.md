@@ -113,7 +113,7 @@ There are two configuration parameters in the configuration file: `config/ncboan
  - `apikey`: The API key obtained from the portal (even the docker or VM deployments have a default API key). 
 
 ### III.6. USEA
-
+USEA is a system for joint, WSD, Semantic Role Labelling and Abstract Mearning Representation parsing by SapienzaNLP (https://github.com/SapienzaNLP/usea). USEA can be integrated through the provided Docker container. However, the official distribution contains errors in the source code in the docker container for the WSD component as well as bad exception handling, making them inoperable out-of-the-box.  Given that only images are available but not Dockerfiles, the errors must be solved interactively by running interactive shells inside the running containers (https://github.com/SapienzaNLP/usea/issues/4). Instructions pending.
 
 ## Full evaluation report from the paper for the considered use-case
 ```"DescriptiveStatisticsEvaluator": {
